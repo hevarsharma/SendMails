@@ -11,7 +11,9 @@ dotenv.config();
 
 const mailRoute = require('./router/nodemailerRouter');
 
-app.use(express.urlencoded({ extended : true}));
+app.use(express.json({limit: '50mb'}));
+
+app.use(express.urlencoded({ extended : true, limit: '50mb'}));
 
 app.use(cors({
   origin: '*'
@@ -29,10 +31,6 @@ const fileStorage = multer.diskStorage({
   });
 
 app.use(multer({ storage : fileStorage }).single('file'));
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
 
 app.use('/api', mailRoute);
 

@@ -3,8 +3,6 @@ const nodemailer = require('nodemailer');
 const { jsPDF } =  require("jspdf");
 const pdf = new jsPDF();
 
-const reader = require('xlsx');
-
 const transporter = nodemailer.createTransport({
     service: "outlook",
     maxConnections: 10,
@@ -27,31 +25,18 @@ exports.sendMails = async (req, res) => {
 
     try {
 
-        const files = req.file;
-        if (!files) {
-            return res.send({ error: 'Isuue from fetching the file' });
-        }
+         let userData = []; // list of all the user containing the map of their mail and path of thier pdf file...
 
-        const filePath = files.path;
+        requestData = req.body;
+        users = requestData.apiData;
+        
+        users.forEach(user => {
 
-        const file = reader.readFile(filePath);
+            let userPdfPath = toPdf(user[4], user[2]);
 
-        const sheets = file.SheetNames    //from fatching path to get the sheet..
-
-        let userData = []; // list of all the user containing the map of their mail and path of thier pdf file...
-
-        for (let i = 0; i < sheets.length; i++) {
-
-            const temp = reader.utils.sheet_to_json(
-                file.Sheets[file.SheetNames[i]]);
-            temp.forEach(async (response) => {
-
-                let userPdfPath = toPdf(response.image, response.email);
-
-                userData.push({ "userName": response.name, "userMail": response.email, "userPdfPath": userPdfPath });
-
-            });
-        }
+            userData.push({ "userName": user[1], "userMail": user[2], "userPdfPath": userPdfPath });
+            
+        });
 
         let userIndex = 0;
 
