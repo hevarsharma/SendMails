@@ -35,7 +35,7 @@ app.use(multer({ storage : fileStorage }).single('file'));
 app.use('/api', mailRoute);
 
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT  || 6500;
 
 app.listen( PORT , () => {
     console.log(`server is running on ${PORT}`);

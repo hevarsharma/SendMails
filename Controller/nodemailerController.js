@@ -1,72 +1,45 @@
 const nodemailer = require('nodemailer');
 
-const { jsPDF } =  require("jspdf");
+const { jsPDF } = require("jspdf");
 const pdf = new jsPDF();
 
 const transporter = nodemailer.createTransport({
-    service: "outlook",
-    maxConnections: 10,
-    pool: true,
-    host: "smtp.outlook.com",
-    port: 587,
-    secure: false,
+    service: 'gmail',
     auth: {
-        user: process.env.EMAIL,
-        pass: process.env.PASSWORD
-    },
-    tls: {
-        rejectUnauthorized: true,
-        minVersion: "TLSv1.2"
+      user: process.env.EMAIL,
+      pass: process.env.PASSWORD
     }
-}
-);  //creating a transporter or intiliazing ...
+  });  //creating a transporter or intiliazing ...
 
 exports.sendMails = async (req, res) => {
 
     try {
+        const user = req.body;
+        let userPdfPath = toPdf(user.image, user.email);
+        console.log(userPdfPath);
 
-         let userData = []; // list of all the user containing the map of their mail and path of thier pdf file...
+        mailOption = {
+            from: process.env.EMAIL,
+            to: user.email,
+            subject: "Regarding Access cards",
+            text: "Here is yours Access card.",
+            attachments: [
+                {
+                    filename: 'Access-Card',
+                    path: userPdfPath,
+                    contentType: "application/pdf",
+                },
+            ],
+        }
 
-        requestData = req.body;
-        users = requestData.apiData;
-        
-        users.forEach(user => {
-
-            let userPdfPath = toPdf(user[4], user[2]);
-
-            userData.push({ "userName": user[1], "userMail": user[2], "userPdfPath": userPdfPath });
-            
-        });
-
-        let userIndex = 0;
-
-        let interval;   //setIntervel variable
-        interval = setInterval(function () {
-
-            if (userIndex === userData.length - 1) {
-                clearInterval(interval);
+        transporter.sendMail(mailOption, function (err, info) {
+            if (err) {
+                res.send({code: 404, message:err});
             }
-
-            transporter.sendMail({
-                from: process.env.EMAIL,
-                to: userData[userIndex].userMail,
-                subject: 'Regarding Id cards',
-                text: 'Here is yours Id card.',
-                attachments: [
-                    {
-                        filename: `${ userData[userIndex].userName}-ID-Card`,
-                        path: userData[userIndex].userPdfPath,
-                        contentType: 'application/pdf'
-                    }]
-            },
-            )
-
-            userIndex = userIndex + 1;
-
-        }, 2000);
-
-        res.send({ message: "Mail Delivered" });
-
+            else {
+                res.send({code: 200, message:'Mail Delievered'});
+            }
+        });
     } catch (err) {
         console.log(err);
     }
