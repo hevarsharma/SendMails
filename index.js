@@ -1,5 +1,4 @@
 const express = require('express');
-const multer = require('multer');
 const dotenv = require('dotenv');
 const cors = require('cors');
 
@@ -21,16 +20,10 @@ app.use(cors({
 
 app.use(bodyParser.json());
 
-const fileStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, 'files');
-    },
-    filename: (req, file, cb) => {
-      cb(null, new Date().toISOString() + '-' + file.originalname);
-    }
-  });
-
-app.use(multer({ storage : fileStorage }).single('file'));
+app.get('/', async (req, res, next) => {
+  res.send({message: 'sendmail is working'});
+  next();
+})
 
 app.use('/api', mailRoute);
 
